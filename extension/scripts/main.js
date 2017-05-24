@@ -10263,7 +10263,6 @@ var _jquery2 = _interopRequireDefault(_jquery);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 //import Pilgrim from '../_modules/pilgrim/pilgrim';
-// import css from '../_styles/css_map_all.json';
 
 'use strict'; // Main javascript entry point
 // Should handle bootstrapping/starting application
@@ -10275,10 +10274,10 @@ var savedTasks = JSON.parse(localStorage.getItem('tasks'));
 var tasks = [];
 var task;
 
-if (savedTasks.length === 0) {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-} else {
+if (savedTasks != null && savedTasks.length > 0) {
   tasks = savedTasks;
+} else {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
 var checkExists = function checkExists(list, key) {
@@ -10291,8 +10290,6 @@ var checkExists = function checkExists(list, key) {
   }
 };
 
-console.log(chrome);
-
 document.addEventListener('DOMContentLoaded', function () {
 
   var elem = {
@@ -10301,58 +10298,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
   elem.syncBtn.addEventListener('click', function () {
 
-    console.log('clicou em sincar.');
-
-    chrome.runtime.sendMessage({ method: "syncTasks", args: { list: tasks } });
+    chrome.runtime.sendMessage({ method: "syncTasks" });
   });
-
-  //coisas para minerar as tarefas do jira
-  // if( window.location.href.indexOf(testBrowse) >= 0) {
-  //   // Found world
-
-  //   task = {
-  //     key: $('.issue-link').attr('data-issue-key'),
-  //     title: $('.issue-link').text(),
-  //     excerpt: $('h1#summary-val').text()
-  //   };
-
-  //   if(!checkExists(savedTasks, task.key)) {
-  //     tasks.push(task);
-
-  //     // Put the object into storage
-  //     localStorage.setItem('tasks', JSON.stringify(tasks));      
-  //   }
-  // }
-
-
-  console.log('js is added and working...');
 });
 
-// $(() => {
+(0, _jquery2.default)(function () {
 
-//   var elem = {
-//     syncBtn: $('#sync_task')
-//   }
+  if (window.location.href.indexOf(testBrowse) >= 0) {
+    // Found world
 
+    task = {
+      key: (0, _jquery2.default)('.issue-link').attr('data-issue-key'),
+      title: (0, _jquery2.default)('.issue-link').text(),
+      excerpt: (0, _jquery2.default)('h1#summary-val').text()
+    };
 
-//   console.log(document);
+    if (!checkExists(savedTasks, task.key)) {
+      tasks.push(task);
 
-//   //eventos
-//   ////////////
+      // Put the object into storage
+      localStorage.setItem('tasks', JSON.stringify(tasks));
 
-//   elem.syncBtn.on('click', function (evt) {
-//     evt.preventDefault();
-
-
-//     console.log('clicou em sincar.');
-
-//     chrome.runtime.sendMessage({method: "syncTasks", args: {list: tasks}});
-
-
-//   });
-
-
-// });
+      chrome.runtime.sendMessage({ method: "receiveTasks", args: { list: tasks } });
+    }
+  }
+});
 
 },{"jquery":1}]},{},[2])
 

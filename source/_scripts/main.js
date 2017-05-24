@@ -3,9 +3,9 @@
 
 import $ from 'jquery';
 //import Pilgrim from '../_modules/pilgrim/pilgrim';
-// import css from '../_styles/css_map_all.json';
 
 'use strict';
+
 
 var listBrowse = {};
 var testBrowse = 'itelios.atlassian.net/browse/';
@@ -14,10 +14,11 @@ var savedTasks = JSON.parse(localStorage.getItem('tasks'));
 var tasks = [];
 var task;
 
-if(savedTasks.length === 0 ){
-  localStorage.setItem('tasks', JSON.stringify(tasks));  
+
+if(savedTasks != null && savedTasks.length > 0 ){
+  tasks = savedTasks;
 } else {
-  tasks =  savedTasks;
+  localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
 var checkExists = function (list, key) {
@@ -33,75 +34,42 @@ var checkExists = function (list, key) {
 };
 
 
-
-
-
-console.log(chrome);
-
-
 document.addEventListener('DOMContentLoaded', function() {
 
   var elem = {
     syncBtn: document.getElementById('sync_task')
   }
 
-
   elem.syncBtn.addEventListener('click', function() {
 
-    console.log('clicou em sincar.');
-
-    chrome.runtime.sendMessage({method: "syncTasks", args: {list: tasks}});
+    chrome.runtime.sendMessage({method: "syncTasks"});
 
   });
 
 
-
-  //coisas para minerar as tarefas do jira
-  // if( window.location.href.indexOf(testBrowse) >= 0) {
-  //   // Found world
-
-  //   task = {
-  //     key: $('.issue-link').attr('data-issue-key'),
-  //     title: $('.issue-link').text(),
-  //     excerpt: $('h1#summary-val').text()
-  //   };
-
-  //   if(!checkExists(savedTasks, task.key)) {
-  //     tasks.push(task);
-
-  //     // Put the object into storage
-  //     localStorage.setItem('tasks', JSON.stringify(tasks));      
-  //   }
-  // }
-
-
-  console.log('js is added and working...');
-
 });
 
 
-// $(() => {
+$(() => {
 
-//   var elem = {
-//     syncBtn: $('#sync_task')
-//   }
+  if( window.location.href.indexOf(testBrowse) >= 0) {
+    // Found world
+
+    task = {
+      key: $('.issue-link').attr('data-issue-key'),
+      title: $('.issue-link').text(),
+      excerpt: $('h1#summary-val').text()
+    };
+
+    if(!checkExists(savedTasks, task.key)) {
+      tasks.push(task);
+
+      // Put the object into storage
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+
+      chrome.runtime.sendMessage({method: "receiveTasks", args: {list: tasks}});
+    }
+  }
 
 
-//   console.log(document);
-
-//   //eventos
-//   ////////////
-
-//   elem.syncBtn.on('click', function (evt) {
-//     evt.preventDefault();
-
-
-//     console.log('clicou em sincar.');
-    
-//     chrome.runtime.sendMessage({method: "syncTasks", args: {list: tasks}});
-    
-
-//   });
-
-  
-// });
+});
