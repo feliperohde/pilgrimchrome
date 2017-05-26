@@ -2,37 +2,12 @@
 // Should handle bootstrapping/starting application
 
 import $ from 'jquery';
-//import Pilgrim from '../_modules/pilgrim/pilgrim';
 
 'use strict';
 
+////////////////////////////
 
-var listBrowse = {};
-var testBrowse = 'itelios.atlassian.net/browse/';
-
-var savedTasks = JSON.parse(localStorage.getItem('tasks'));
-var tasks = [];
-var task;
-
-
-if(savedTasks != null && savedTasks.length > 0 ){
-  tasks = savedTasks;
-} else {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-}
-
-var checkExists = function (list, key) {
-
-  if (list === null) return;
-
-  for (var i = list.length - 1; i >= 0; i--) {
-
-    if(list[i].key === key)
-      return true
-  }
-
-};
-
+var watchDomain = 'itelios.atlassian.net/browse/';
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -46,30 +21,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
   });
 
+});
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  switch(request.method) {
+    case 'taskList':
+
+      console.log(request.args.tasks);
+
+      sendResponse({status: 'ok'});
+
+    break;
+
+    default:
+      console.log('Invalid...');
+  }
 
 });
 
 
 $(() => {
 
-  if( window.location.href.indexOf(testBrowse) >= 0) {
-    // Found world
+  // envia-se para o background uma mensagem para ele subir a aplicação
+  chrome.runtime.sendMessage({method: "up"});
 
-    task = {
+  if( window.location.href.indexOf(watchDomain) >= 0) {
+
+    var task = {
       key: $('.issue-link').attr('data-issue-key'),
       title: $('.issue-link').text(),
-      excerpt: $('h1#summary-val').text()
+      excerpt: $('h1#summary-val').text(),
+      synced: false
     };
 
-    if(!checkExists(savedTasks, task.key)) {
-      tasks.push(task);
-
-      // Put the object into storage
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-
-      chrome.runtime.sendMessage({method: "receiveTasks", args: {list: tasks}});
-    }
-  }
+    chrome.runtime.sendMessage({method: "addToList", args: {task: task}});
+  };
 
 
 });

@@ -11,7 +11,7 @@
   },
 
   "permissions": [
-    "activeTab",
+    "tabs",
 
     "cookies",
     "http://www.itelios.com/",

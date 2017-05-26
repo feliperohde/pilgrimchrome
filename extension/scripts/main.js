@@ -10262,33 +10262,14 @@ var _jquery2 = _interopRequireDefault(_jquery);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-//import Pilgrim from '../_modules/pilgrim/pilgrim';
+'use strict';
 
-'use strict'; // Main javascript entry point
+////////////////////////////
+
+// Main javascript entry point
 // Should handle bootstrapping/starting application
 
-var listBrowse = {};
-var testBrowse = 'itelios.atlassian.net/browse/';
-
-var savedTasks = JSON.parse(localStorage.getItem('tasks'));
-var tasks = [];
-var task;
-
-if (savedTasks != null && savedTasks.length > 0) {
-  tasks = savedTasks;
-} else {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-}
-
-var checkExists = function checkExists(list, key) {
-
-  if (list === null) return;
-
-  for (var i = list.length - 1; i >= 0; i--) {
-
-    if (list[i].key === key) return true;
-  }
-};
+var watchDomain = 'itelios.atlassian.net/browse/';
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -10302,26 +10283,37 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  switch (request.method) {
+    case 'taskList':
+
+      console.log(request.args.tasks);
+
+      sendResponse({ status: 'ok' });
+
+      break;
+
+    default:
+      console.log('Invalid...');
+  }
+});
+
 (0, _jquery2.default)(function () {
 
-  if (window.location.href.indexOf(testBrowse) >= 0) {
-    // Found world
+  // envia-se para o background uma mensagem para ele subir a aplicação
+  chrome.runtime.sendMessage({ method: "up" });
 
-    task = {
+  if (window.location.href.indexOf(watchDomain) >= 0) {
+
+    var task = {
       key: (0, _jquery2.default)('.issue-link').attr('data-issue-key'),
       title: (0, _jquery2.default)('.issue-link').text(),
-      excerpt: (0, _jquery2.default)('h1#summary-val').text()
+      excerpt: (0, _jquery2.default)('h1#summary-val').text(),
+      synced: false
     };
 
-    if (!checkExists(savedTasks, task.key)) {
-      tasks.push(task);
-
-      // Put the object into storage
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-
-      chrome.runtime.sendMessage({ method: "receiveTasks", args: { list: tasks } });
-    }
-  }
+    chrome.runtime.sendMessage({ method: "addToList", args: { task: task } });
+  };
 });
 
 },{"jquery":1}]},{},[2])

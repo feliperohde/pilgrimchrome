@@ -116,7 +116,7 @@ q {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
-body {
+body.pilgrim-wrapper {
   min-width: 320px;
   padding: $gutter;
   background-color: #f00;
