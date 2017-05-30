@@ -11,8 +11,7 @@ export default class Pilgrim {
 
       watchDomain: 'itelios.atlassian.net/browse/', //'dominio para ouvir e procurar tasks'
 
-
-      tasks: [],
+      tasks: {},
       localStorageTasks: {},
 
       getGroupTaskUri: 'http://pilgrim.itelios.net/Task/getGroupTasks', /*
@@ -51,22 +50,76 @@ export default class Pilgrim {
 
     //métodos expostos
     this.listem =  this._listemEvents;
+    this.up =  this._up;
+
+  };
+
+  _up () {
+
+    console.log('/////////_up//////////');
+
+    this._createDailyList();
+
+    this._verifyLocalStorage();
+
+    //devolvemos para o content uma mensagem com a lista de tarefas que estão em memória
+    this._sendTaskToContent();
+
+    this._syncCookies(function (data) {
+
+      this.options.isSyncedCookies = true;
+      console.log('pronto para sincronizar e fazer qqr coisa no pilgrim...');
+
+    }.bind(this));
 
   };
 
   _checkExists (task) {
 
-    for (var i = this.options.tasks.length - 1; i >= 0; i--) {
+    console.log('here');
 
-      if(this.options.tasks[i].key === task.key)
+    console.log(this.options.currentDate);
+    console.log(this.options.tasks);
+
+    for (var i = this.options.tasks[this.options.currentDate].length - 1; i >= 0; i--) {
+
+      if(this.options.tasks[this.options.currentDate][i].key === task.key)
         return true
+
     }
+
+  };
+
+  _createDailyList () {
+
+    console.log('////////////_createDailyList//////////');
+
+    let date = new Date();
+    let day = date.getDate();
+    let month = date.getMonth();
+    let year = date.getFullYear();
+
+    let fullDate = day + '-' + month + '-'  + year;
+
+    this.options.currentDate = fullDate;
+
+    //crio um idice para o dia no vetor de tasks se este nao existir
+    if("undefined" === typeof this.options.tasks[fullDate]) {
+      this.options.tasks[fullDate] = [];
+    }
+
+    console.log(this.options.tasks);
+    console.log(this.options.currentDate);
+
   };
 
   _addToList (task) {
 
+    console.log('////////////_addToList//////////');
+    console.log(this.options.tasks);
+
     if(!this._checkExists(task)) {
-      this.options.tasks.push(task);
+      this.options.tasks[this.options.currentDate].push(task);
 
       // Put the object into storage
       localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
@@ -83,7 +136,7 @@ export default class Pilgrim {
     this.options.localStorageTasks = JSON.parse(localStorage.getItem('tasks'));
 
     if(this.options.localStorageTasks != null && this.options.localStorageTasks.length > 0 ){
-      this.options.tasks = this.options.localStorageTasks;
+      this.options.tasks[this.options.currentDate] = this.options.localStorageTasks;
     } else {
       localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
     }
@@ -94,6 +147,8 @@ export default class Pilgrim {
 
   _listemEvents () {
 
+    console.log('/////////_listemEvents//////////');
+
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
       console.log(request);
@@ -101,18 +156,22 @@ export default class Pilgrim {
       switch(request.method) {
         case 'syncTasks':
           this._postTasks();
-
         break;
 
         case 'receiveTasks':
           this._receiveTasks(request.args.list);
+        break;
 
         case 'addToList':
           this._addToList(request.args.task);
+        break;
 
         case 'up':
           this._up();
+        break;
 
+        case 'clearAll':
+          this._clearAllQueue();
         break;
 
 
@@ -125,33 +184,28 @@ export default class Pilgrim {
 
   };
 
-  _up () {
 
-    this._syncCookies(function (data) {
-      this.options.isSyncedCookies = true;
+  _clearAllQueue () {
 
-      this._verifyLocalStorage();
+    console.log('////////////_clearAllQueue//////////');
 
-      //devolvemos para o content uma mensagem com a lista de tarefas que estão em memória
-      this._sendTaskToContent();
+    this.options.tasks = [];
+    this.options.localStorageTasks = this.options.tasks;
 
-    }.bind(this));
+    localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
 
-
-
-    console.log('pronto para sincronizar e fazer qqr coisa no pilgrim...');
   };
 
-
   _sendTaskToContent () {
+
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 
-      console.log('tabs');
-      console.log(tabs);
       chrome.tabs.sendMessage(tabs[0].id, {method: "taskList", args: {tasks: this.options.tasks}}, function(response) {
         console.log(response);
       });
+
     }.bind(this));
+
   };
 
   _receiveTasks (list) {

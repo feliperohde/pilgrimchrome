@@ -12,12 +12,23 @@ var watchDomain = 'itelios.atlassian.net/browse/';
 document.addEventListener('DOMContentLoaded', function() {
 
   var elem = {
-    syncBtn: document.getElementById('sync_task')
+    syncBtn: document.getElementById('sync_task'),
+    clearAllBtn: document.getElementById('clear_data')
   }
 
+
+  //botao sincronizar com o pilgrim
   elem.syncBtn.addEventListener('click', function() {
 
     chrome.runtime.sendMessage({method: "syncTasks"});
+
+  });
+
+
+  //botao apagar toda a fila de tasks da memoria
+  elem.clearAllBtn.addEventListener('click', function() {
+
+    chrome.runtime.sendMessage({method: "clearAll"});
 
   });
 
@@ -47,10 +58,11 @@ $(() => {
 
   if( window.location.href.indexOf(watchDomain) >= 0) {
 
-    var task = {
+    let task = {
       key: $('.issue-link').attr('data-issue-key'),
       title: $('.issue-link').text(),
       excerpt: $('h1#summary-val').text(),
+      status: $('#status-val > span').text(),
       synced: false
     };
 
