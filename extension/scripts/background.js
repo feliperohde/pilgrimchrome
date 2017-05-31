@@ -22,11 +22,6 @@ var Pilgrim = function () {
 
       domain: 'http://pilgrim.itelios.net',
 
-      watchDomain: 'itelios.atlassian.net/browse/', //'dominio para ouvir e procurar tasks'
-
-      tasks: {},
-      localStorageTasks: {},
-
       getGroupTaskUri: 'http://pilgrim.itelios.net/Task/getGroupTasks', /*
                                                                         post
                                                                         headers:
@@ -66,87 +61,11 @@ var Pilgrim = function () {
 
       console.log('/////////_up//////////');
 
-      this._createDailyList();
-
-      this._verifyLocalStorage();
-
-      //devolvemos para o content uma mensagem com a lista de tarefas que estão em memória
-      this._sendTaskToContent();
-
       this._syncCookies(function (data) {
 
         this.options.isSyncedCookies = true;
         console.log('pronto para sincronizar e fazer qqr coisa no pilgrim...');
       }.bind(this));
-    }
-  }, {
-    key: '_checkExists',
-    value: function _checkExists(task) {
-
-      console.log('here');
-
-      console.log(this.options.currentDate);
-      console.log(this.options.tasks);
-
-      for (var i = this.options.tasks[this.options.currentDate].length - 1; i >= 0; i--) {
-
-        if (this.options.tasks[this.options.currentDate][i].key === task.key) return true;
-      }
-    }
-  }, {
-    key: '_createDailyList',
-    value: function _createDailyList() {
-
-      console.log('////////////_createDailyList//////////');
-
-      var date = new Date();
-      var day = date.getDate();
-      var month = date.getMonth();
-      var year = date.getFullYear();
-
-      var fullDate = day + '-' + month + '-' + year;
-
-      this.options.currentDate = fullDate;
-
-      //crio um idice para o dia no vetor de tasks se este nao existir
-      if ("undefined" === typeof this.options.tasks[fullDate]) {
-        this.options.tasks[fullDate] = [];
-      }
-
-      console.log(this.options.tasks);
-      console.log(this.options.currentDate);
-    }
-  }, {
-    key: '_addToList',
-    value: function _addToList(task) {
-
-      console.log('////////////_addToList//////////');
-      console.log(this.options.tasks);
-
-      if (!this._checkExists(task)) {
-        this.options.tasks[this.options.currentDate].push(task);
-
-        // Put the object into storage
-        localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
-      }
-
-      console.log(this.options.tasks);
-    }
-  }, {
-    key: '_verifyLocalStorage',
-    value: function _verifyLocalStorage() {
-
-      console.log('verificando o localStorage');
-
-      this.options.localStorageTasks = JSON.parse(localStorage.getItem('tasks'));
-
-      if (this.options.localStorageTasks != null && this.options.localStorageTasks.length > 0) {
-        this.options.tasks[this.options.currentDate] = this.options.localStorageTasks;
-      } else {
-        localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
-      }
-
-      console.log(this.options.tasks);
     }
   }, {
     key: '_listemEvents',
@@ -159,60 +78,11 @@ var Pilgrim = function () {
         console.log(request);
 
         switch (request.method) {
-          case 'syncTasks':
-            this._postTasks();
-            break;
-
-          case 'receiveTasks':
-            this._receiveTasks(request.args.list);
-            break;
-
-          case 'addToList':
-            this._addToList(request.args.task);
-            break;
-
-          case 'up':
-            this._up();
-            break;
-
-          case 'clearAll':
-            this._clearAllQueue();
-            break;
 
           default:
             console.log('Invalid...');
         }
       }.bind(this));
-    }
-  }, {
-    key: '_clearAllQueue',
-    value: function _clearAllQueue() {
-
-      console.log('////////////_clearAllQueue//////////');
-
-      this.options.tasks = [];
-      this.options.localStorageTasks = this.options.tasks;
-
-      localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
-    }
-  }, {
-    key: '_sendTaskToContent',
-    value: function _sendTaskToContent() {
-
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-
-        chrome.tabs.sendMessage(tabs[0].id, { method: "taskList", args: { tasks: this.options.tasks } }, function (response) {
-          console.log(response);
-        });
-      }.bind(this));
-    }
-  }, {
-    key: '_receiveTasks',
-    value: function _receiveTasks(list) {
-
-      if (!list.length) return;
-
-      this.options.tasks = list;
     }
   }, {
     key: '_getCookie',
@@ -319,19 +189,221 @@ module.exports = exports['default'];
 },{}],2:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Watcher = function () {
+  function Watcher(options) {
+    _classCallCheck(this, Watcher);
+
+    console.log('Watcher module');
+
+    var defaults = {
+
+      cookies: [],
+      isSyncedCookies: false,
+
+      domain: 'http://pilgrim.itelios.net',
+
+      tasks: {},
+      localStorageTasks: {}
+
+    };
+
+    this.options = Object.assign({}, defaults, options);
+
+    //métodos expostos
+    this.listem = this._listemEvents;
+    this.up = this._up;
+  }
+
+  _createClass(Watcher, [{
+    key: '_up',
+    value: function _up() {
+
+      console.log('/////////_up//////////');
+
+      this._createDailyList();
+
+      this._verifyLocalStorage();
+    }
+  }, {
+    key: '_checkExists',
+    value: function _checkExists(task) {
+
+      console.log('here');
+
+      console.log(this.options.currentDate);
+      console.log(this.options.tasks);
+
+      for (var i = this.options.tasks[this.options.currentDate].length - 1; i >= 0; i--) {
+
+        if (this.options.tasks[this.options.currentDate][i].key === task.key) return true;
+      }
+    }
+  }, {
+    key: '_createDailyList',
+    value: function _createDailyList() {
+
+      console.log('////////////_createDailyList//////////');
+
+      var date = new Date();
+      var day = date.getDate();
+      var month = date.getMonth();
+      var year = date.getFullYear();
+
+      var fullDate = day + '-' + month + '-' + year;
+
+      this.options.currentDate = fullDate;
+
+      //crio um idice para o dia no vetor de tasks se este nao existir
+      if ("undefined" === typeof this.options.tasks[fullDate]) {
+        this.options.tasks[fullDate] = [];
+      }
+
+      console.log(this.options.tasks);
+      console.log(this.options.currentDate);
+    }
+  }, {
+    key: '_addToList',
+    value: function _addToList(task) {
+
+      console.log('////////////_addToList//////////');
+      console.log(this.options.tasks);
+
+      if (!this._checkExists(task)) {
+        this.options.tasks[this.options.currentDate].push(task);
+
+        // Put the object into storage
+        localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
+      }
+
+      console.log(this.options.tasks);
+    }
+  }, {
+    key: '_verifyLocalStorage',
+    value: function _verifyLocalStorage() {
+
+      console.log('verificando o localStorage');
+
+      this.options.localStorageTasks = JSON.parse(localStorage.getItem('tasks'));
+
+      if (this.options.localStorageTasks != null && this.options.localStorageTasks.length > 0) {
+        this.options.tasks[this.options.currentDate] = this.options.localStorageTasks;
+      } else {
+        localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
+      }
+
+      console.log(this.options.tasks);
+    }
+  }, {
+    key: '_listemEvents',
+    value: function _listemEvents() {
+
+      console.log('/////////_listemEvents//////////');
+
+      chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+
+        console.log(request);
+
+        switch (request.method) {
+          case 'syncTasks':
+            this._postTasks();
+            break;
+
+          case 'receiveTasks':
+            this._receiveTasks(request.args.list);
+            break;
+
+          case 'addToList':
+            this._addToList(request.args.task);
+            break;
+
+          case 'up':
+            this._up();
+            break;
+
+          case 'clearAll':
+            this._clearAllQueue();
+            break;
+
+          case 'getSavedTaskList':
+            //devolvemos para o content uma mensagem com a lista de tarefas que estão em memória
+            this._sendTaskToContent();
+            break;
+
+          default:
+            console.log('Invalid...');
+        }
+      }.bind(this));
+    }
+  }, {
+    key: '_clearAllQueue',
+    value: function _clearAllQueue() {
+
+      console.log('////////////_clearAllQueue//////////');
+
+      this.options.tasks = [];
+      this.options.localStorageTasks = this.options.tasks;
+
+      localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
+    }
+  }, {
+    key: '_sendTaskToContent',
+    value: function _sendTaskToContent() {
+
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+
+        chrome.tabs.sendMessage(tabs[0].id, { method: "taskList", args: { tasks: this.options.tasks } }, function (response) {
+          console.log(response);
+        });
+      }.bind(this));
+    }
+  }, {
+    key: '_receiveTasks',
+    value: function _receiveTasks(list) {
+
+      if (!list.length) return;
+
+      this.options.tasks = list;
+    }
+  }]);
+
+  return Watcher;
+}();
+
+exports.default = Watcher;
+module.exports = exports['default'];
+
+},{}],3:[function(require,module,exports){
+'use strict';
+
+var _watcher = require('../_modules/watcher/watcher');
+
+var _watcher2 = _interopRequireDefault(_watcher);
+
 var _pilgrim = require('../_modules/pilgrim/pilgrim');
 
 var _pilgrim2 = _interopRequireDefault(_pilgrim);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-'use strict'; // Main javascript entry point
+// Main javascript entry point
 // Should handle bootstrapping/starting application
 
+'use strict';
+
 var pilgrim = new _pilgrim2.default();
+var watcher = new _watcher2.default();
 
-pilgrim.listem();
+pilgrim.up();
+watcher.listem();
 
-},{"../_modules/pilgrim/pilgrim":1}]},{},[2])
+},{"../_modules/pilgrim/pilgrim":1,"../_modules/watcher/watcher":2}]},{},[3])
 
 //# sourceMappingURL=background.js.map
