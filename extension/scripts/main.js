@@ -88,9 +88,18 @@ var Front = function () {
     value: function _toggleListVisibility() {
       console.log('///////////_toggleListVisibility/////////////');
 
+      // var body = document.getElementsByTagName("body");
+      // var list = document.getElementById("pilgrim-itelios");
+
+      // if(list)
+      //   body[0].removeChild(list);
+
+
+      // this._renderList();
+
       var style = document.getElementById('pilgrim-itelios').style.display;
 
-      if (style == 'block') document.getElementById('pilgrim-itelios').style.display = 'none';else document.getElementById('pilgrim-itelios').style.display = 'block';
+      if (style == 'none') document.getElementById('pilgrim-itelios').style.display = 'block';else document.getElementById('pilgrim-itelios').style.display = 'none';
     }
   }, {
     key: '_listemMessages',
@@ -102,7 +111,6 @@ var Front = function () {
         switch (request.method) {
           case 'taskList':
             this.options.tasks = request.args.tasks;
-
             this._renderList();
 
             sendResponse({ status: 'ok' });

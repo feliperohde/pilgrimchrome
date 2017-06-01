@@ -96,12 +96,21 @@ export default class Front {
   _toggleListVisibility () {
     console.log('///////////_toggleListVisibility/////////////');
 
+    // var body = document.getElementsByTagName("body");
+    // var list = document.getElementById("pilgrim-itelios");
+
+    // if(list)
+    //   body[0].removeChild(list);
+
+
+    // this._renderList();
+
     let style = document.getElementById('pilgrim-itelios').style.display;
 
-    if(style == 'block')
-      document.getElementById('pilgrim-itelios').style.display = 'none';
-    else
+    if(style == 'none')
       document.getElementById('pilgrim-itelios').style.display = 'block';
+    else
+      document.getElementById('pilgrim-itelios').style.display = 'none';
 
   };
 
@@ -113,7 +122,6 @@ export default class Front {
       switch(request.method) {
         case 'taskList':
           this.options.tasks = request.args.tasks;
-
           this._renderList();
 
           sendResponse({status: 'ok'});

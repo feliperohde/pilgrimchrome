@@ -292,13 +292,17 @@ var Watcher = function () {
 
       console.log('verificando o localStorage');
 
-      this.options.localStorageTasks = JSON.parse(localStorage.getItem('tasks'));
+      chrome.storage.local.get('tasks', function (result) {
 
-      if (this.options.localStorageTasks != null && this.options.localStorageTasks.length > 0) {
-        this.options.tasks[this.options.currentDate] = this.options.localStorageTasks;
-      } else {
-        localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
-      }
+        this.options.localStorageTasks = JSON.parse(result.tasks);
+
+        if (this.options.localStorageTasks != null && this.options.localStorageTasks.length > 0) {
+          this.options.tasks[this.options.currentDate] = this.options.localStorageTasks;
+        } else {
+          chrome.storage.local.set({ 'tasks': JSON.stringify(this.options.tasks) });
+          localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
+        }
+      }.bind(this));
 
       console.log(this.options.tasks);
     }
@@ -360,6 +364,10 @@ var Watcher = function () {
 
       this.options.tasks = [];
       this.options.localStorageTasks = this.options.tasks;
+
+      chrome.storage.local.remove('tasks', function () {
+        console.log('chrome chrome.storage');
+      });
 
       localStorage.setItem('tasks', JSON.stringify(this.options.tasks));
     }
