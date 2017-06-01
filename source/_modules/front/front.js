@@ -4,6 +4,9 @@ export default class Front {
 
     var defaults = {
 
+      listElement: document.getElementById('task__list'),
+      listItem: document.querySelector(".task__list .task__item"),
+
       watchDomain: 'itelios.atlassian.net/browse/',
       tasks: {}
 
@@ -14,6 +17,18 @@ export default class Front {
     this.up =  this._up;
     this.listemActions = this._listemActions;
     this.listemMessages = this._listemMessages;
+    this.renderList = this._renderList;
+
+    this.setRenderer = this._setRenderer;
+
+  };
+
+  _setRenderer (renderer) {
+    console.log('//////////_setRenderer////////');
+
+    this.options.renderer = renderer;
+
+    return this;
 
   };
 
@@ -21,11 +36,9 @@ export default class Front {
 
     console.log('/////////_up//////////');
 
-    document.addEventListener('DOMContentLoaded', function() {
-
       // envia-se para o background uma mensagem para ele subir a aplicação
-      chrome.runtime.sendMessage({method: "up"});
-      chrome.runtime.sendMessage({method: "getSavedTaskList"});
+      chrome.runtime.sendMessage({from: 'content/front', method: "up"});
+      chrome.runtime.sendMessage({from: 'content/front', method: "getSavedTaskList"});
 
       if( window.location.href.indexOf(this.options.watchDomain) >= 0) {
 
@@ -38,23 +51,77 @@ export default class Front {
           synced: false
         };
 
-        chrome.runtime.sendMessage({method: "addToList", args: {task: task}});
+        chrome.runtime.sendMessage({from: 'content/front', method: "addToList", args: {task: task}});
       };
-
-    }.bind(this));
 
     return this;
 
   };
 
+  _renderList () {
+
+    console.log('/////////_renderList//////////');
+
+    //isso é feio, eu sei.
+    let template =
+    '<div id="pilgrim-itelios">' +
+      '<div class="task">' +
+        '<h2 class="task__title">Lista de tarefas capturadas</h2>' +
+
+        '<%for(var index in this.data) {%>' +
+
+          '<div class="day">' +
+              '<h3 class="day__title"><% index %></h3>' +
+
+              '<ul class="list--vertical task__list">' +
+                '<%for(var task in this.data[index]) {%>' +
+                    '<li class="list__item task__item">' +
+                        '<a title="<% this.data[index][task].title %>" href="<% this.data[index][task].uri %>"><% this.data[index][task].key %></a>' +
+                    '</li>' +
+                '<%}%>' +
+              '</ul>' +
+
+          '</div>' +
+
+        '<%}%>' +
+      '</div>' +
+    '</div>';
+
+    let htmlToDOM = this.options.renderer.render(template, {data: this.options.tasks});
+
+    document.body.innerHTML += htmlToDOM;
+
+  };
+
+  _toggleListVisibility () {
+    console.log('///////////_toggleListVisibility/////////////');
+
+    let style = document.getElementById('pilgrim-itelios').style.display;
+
+    if(style == 'block')
+      document.getElementById('pilgrim-itelios').style.display = 'none';
+    else
+      document.getElementById('pilgrim-itelios').style.display = 'block';
+
+  };
+
   _listemMessages () {
+
+    console.log('/////////_listemMessages/////////');
 
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       switch(request.method) {
         case 'taskList':
+          this.options.tasks = request.args.tasks;
 
-          console.log(request.args.tasks);
-          tasks =
+          this._renderList();
+
+          sendResponse({status: 'ok'});
+
+        break;
+
+        case 'toggleShow':
+          this._toggleListVisibility();
 
           sendResponse({status: 'ok'});
 
@@ -64,7 +131,7 @@ export default class Front {
           console.log('Invalid...');
       }
 
-    });
+    }.bind(this));
 
     return this;
 
@@ -80,23 +147,21 @@ export default class Front {
         clearAllBtn: document.getElementById('clear_data')
       }
 
-
       //botao sincronizar com o pilgrim
       elem.syncBtn.addEventListener('click', function() {
 
-        chrome.runtime.sendMessage({method: "syncTasks"});
+        chrome.runtime.sendMessage({from: 'content/front', method: "syncTasks"});
 
       });
-
 
       //botao apagar toda a fila de tasks da memoria
       elem.clearAllBtn.addEventListener('click', function() {
 
-        chrome.runtime.sendMessage({method: "clearAll"});
+        chrome.runtime.sendMessage({from: 'content/front', method: "clearAll"});
 
       });
 
-    });
+    }.bind(this));
 
     return this;
 

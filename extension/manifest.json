@@ -6,9 +6,10 @@
   "version": "1.0",
 
   "browser_action": {
-   "default_icon": "favicon.png",
-   "default_popup": "popup.html"
+   "default_icon": "favicon.png"
   },
+
+  "devtools_page": "devtools.html",
 
   "permissions": [
     "tabs",
@@ -28,7 +29,8 @@
   "content_scripts": [
     {
       "matches": [
-        "*://itelios.atlassian.net/*"
+        "*://itelios.atlassian.net/*",
+        "*://pilgrim.itelios.net/*"
       ],
       "js": ["scripts/main.js"],
       "css": ["css/main.css"],

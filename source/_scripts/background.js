@@ -6,7 +6,6 @@ import Pilgrim from '../_modules/pilgrim/pilgrim';
 
 'use strict';
 
-
 var pilgrim = new Pilgrim();
 var watcher = new Watcher();
 

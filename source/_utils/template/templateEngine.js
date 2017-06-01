@@ -2,9 +2,11 @@ export default class Template {
   constructor() {
     this.name = 'Template';
     console.log('Template module');
+
+    this.render = this._render;
   }
 
-  Render(html, options) {
+  _render(html, options) {
     var html = html;
     var re = /<%([^%>]+)?%>/g, reExp = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g, code = 'var r=[];\n', cursor = 0, match;
     var add = function(line, js) {
@@ -20,6 +22,6 @@ export default class Template {
     code += 'return r.join("");';
 
     return new Function(code.replace(/[\r\t\n]/g, '')).apply(options);
-  }
+  };
 
 }

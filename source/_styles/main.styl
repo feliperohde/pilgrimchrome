@@ -1,13 +1,33 @@
 // Import Modules
-@import 'core/normalize';
+@import 'core/base';
 
-.pilgrim-wrapper
+#pilgrim-itelios
   .wrapper
     center(desk-bk, gutter)
 
-body.pilgrim-wrapper
-  min-width 320px
 
-  padding $gutter
+///pilgrim helper wrapper
+#pilgrim-itelios
+  position fixed
+  top gutter
+  right gutter
+  z-index 100
 
-  background-color red
+  display none
+  min-width 200px
+
+  background white
+  padding gutter
+  border-radius 5px
+  box-shadow 0 0 5px rgba(0,0,0,.5)
+
+  .task__title
+    color $blue
+
+  .day__title
+    color $green
+
+    margin gutter 0 (gutter / 2) 0
+
+  .task__item
+    color $red

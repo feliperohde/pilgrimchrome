@@ -30,14 +30,11 @@ export default class Watcher {
 
     this._verifyLocalStorage();
 
+    this._listemBrowserAction();
+
   };
 
   _checkExists (task) {
-
-    console.log('here');
-
-    console.log(this.options.currentDate);
-    console.log(this.options.tasks);
 
     for (var i = this.options.tasks[this.options.currentDate].length - 1; i >= 0; i--) {
 
@@ -112,9 +109,6 @@ export default class Watcher {
       console.log(request);
 
       switch(request.method) {
-        case 'syncTasks':
-          this._postTasks();
-        break;
 
         case 'receiveTasks':
           this._receiveTasks(request.args.list);
@@ -147,6 +141,16 @@ export default class Watcher {
 
   };
 
+  _listemBrowserAction () {
+
+    chrome.browserAction.onClicked.addListener(function (tab) { //Fired when User Clicks ICON
+
+      chrome.tabs.sendMessage(tab.id, {from: 'background/watcher', method: "toggleShow" }, function(response) {
+        console.log(response);
+      })
+
+    });
+  };
 
   _clearAllQueue () {
 
@@ -163,7 +167,7 @@ export default class Watcher {
 
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 
-      chrome.tabs.sendMessage(tabs[0].id, {method: "taskList", args: {tasks: this.options.tasks}}, function(response) {
+      chrome.tabs.sendMessage(tabs[0].id, {from: 'background/watcher', method: "taskList", args: {tasks: this.options.tasks}}, function(response) {
         console.log(response);
       });
 

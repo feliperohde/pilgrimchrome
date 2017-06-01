@@ -72,6 +72,10 @@ export default class Pilgrim {
 
       switch(request.method) {
 
+        case 'syncTasks':
+          this._postTasks();
+        break;
+
         default:
           console.log('Invalid...');
       }

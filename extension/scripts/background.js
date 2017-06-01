@@ -79,6 +79,10 @@ var Pilgrim = function () {
 
         switch (request.method) {
 
+          case 'syncTasks':
+            this._postTasks();
+            break;
+
           default:
             console.log('Invalid...');
         }
@@ -231,15 +235,12 @@ var Watcher = function () {
       this._createDailyList();
 
       this._verifyLocalStorage();
+
+      this._listemBrowserAction();
     }
   }, {
     key: '_checkExists',
     value: function _checkExists(task) {
-
-      console.log('here');
-
-      console.log(this.options.currentDate);
-      console.log(this.options.tasks);
 
       for (var i = this.options.tasks[this.options.currentDate].length - 1; i >= 0; i--) {
 
@@ -312,9 +313,6 @@ var Watcher = function () {
         console.log(request);
 
         switch (request.method) {
-          case 'syncTasks':
-            this._postTasks();
-            break;
 
           case 'receiveTasks':
             this._receiveTasks(request.args.list);
@@ -343,6 +341,18 @@ var Watcher = function () {
       }.bind(this));
     }
   }, {
+    key: '_listemBrowserAction',
+    value: function _listemBrowserAction() {
+
+      chrome.browserAction.onClicked.addListener(function (tab) {
+        //Fired when User Clicks ICON
+
+        chrome.tabs.sendMessage(tab.id, { from: 'background/watcher', method: "toggleShow" }, function (response) {
+          console.log(response);
+        });
+      });
+    }
+  }, {
     key: '_clearAllQueue',
     value: function _clearAllQueue() {
 
@@ -359,7 +369,7 @@ var Watcher = function () {
 
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
-        chrome.tabs.sendMessage(tabs[0].id, { method: "taskList", args: { tasks: this.options.tasks } }, function (response) {
+        chrome.tabs.sendMessage(tabs[0].id, { from: 'background/watcher', method: "taskList", args: { tasks: this.options.tasks } }, function (response) {
           console.log(response);
         });
       }.bind(this));
