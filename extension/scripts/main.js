@@ -77,7 +77,7 @@ var Front = function () {
       console.log('/////////_renderList//////////');
 
       //isso é feio, eu sei.
-      var template = '<div id="pilgrim-itelios">' + '<div class="task">' + '<h2 class="task__title">Lista de tarefas capturadas</h2>' + '<%for(var index in this.data) {%>' + '<div class="day">' + '<h3 class="day__title"><% index %></h3>' + '<ul class="list--vertical task__list">' + '<%for(var task in this.data[index]) {%>' + '<li class="list__item task__item">' + '<a title="<% this.data[index][task].title %>" href="<% this.data[index][task].uri %>"><% this.data[index][task].key %></a>' + '</li>' + '<%}%>' + '</ul>' + '</div>' + '<%}%>' + '</div>' + '</div>';
+      var template = '<div id="pilgrim-itelios">' + '<div class="task">' + '<h2 class="task__title">Lista de tarefas capturadas</h2>' + '<%for(var index in this.data) {%>' + '<div class="day">' + '<h3 class="day__title"><% index %></h3>' + '<ul class="list--vertical task__list">' + '<%for(var task in this.data[index]) {%>' + '<li class="list__item task__item">' + '<a target="_blank" title="<% this.data[index][task].title %>" href="<% this.data[index][task].uri %>"><% this.data[index][task].key %></a>' + '</li>' + '<%}%>' + '</ul>' + '</div>' + '<%}%>' + '</div>' + '</div>';
 
       var htmlToDOM = this.options.renderer.render(template, { data: this.options.tasks });
 

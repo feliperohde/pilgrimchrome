@@ -76,7 +76,7 @@ export default class Front {
               '<ul class="list--vertical task__list">' +
                 '<%for(var task in this.data[index]) {%>' +
                     '<li class="list__item task__item">' +
-                        '<a title="<% this.data[index][task].title %>" href="<% this.data[index][task].uri %>"><% this.data[index][task].key %></a>' +
+                        '<a target="_blank" title="<% this.data[index][task].title %>" href="<% this.data[index][task].uri %>"><% this.data[index][task].key %></a>' +
                     '</li>' +
                 '<%}%>' +
               '</ul>' +
