@@ -5,7 +5,7 @@ A idéia deste respositório é prover uma extenção para o chrome que monitore
 ### Como buildar a extenção
 - npm install
 - gulp build
-https://github.com/feliperohde/pilgrimchrome
+
 ### como usar a extenção em meu navegador
 
 No Chrome, em configurações, vá até a aba de extensions e habilite o modo desenvolvedor, depois disso, clique em "carregar extenção expandida" e selecione a pasta "extencion" deste repositório.
